@@ -1,54 +1,72 @@
-Email Classifier AI
+title: Email Classifier AI emoji: 📧 colorFrom: blue colorTo: green sdk: docker app_port: 7860
 <p align="center">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Python-3.9%2B-blue.svg" alt="Python Version">
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Python-3.9%252B-blue.svg" alt="Versão do Python">
 <img src="https://www.google.com/search?q=https://img.shields.io/badge/Flask-3.0-green.svg" alt="Flask">
 <img src="https://www.google.com/search?q=https://img.shields.io/badge/Hugging_Face-Transformers-yellow.svg" alt="Hugging Face Transformers">
 <img src="https://www.google.com/search?q=https://img.shields.io/badge/Frontend-Vanilla_JS-orange.svg" alt="Frontend">
 <img src="https://www.google.com/search?q=https://img.shields.io/badge/Status-Completo-brightgreen.svg" alt="Status">
 </p>
 
+Email Classifier AI
 Sistema completo de classificação de emails que utiliza um modelo de linguagem avançado (IA) para categorizar conteúdo como Produtivo ou Improdutivo e gerar respostas automáticas personalizadas.
 
-## ✨ <span style="color:#0ea5e9;">Funcionalidades</span>
+✨ <span style="color:#0ea5e9;">Funcionalidades</span>
+<span style="color:#22d3ee;">Interface Web (Frontend)</span>
+🗂️ Upload Inteligente: Suporte a arrastar e soltar (drag-and-drop) de arquivos .txt e .pdf.
 
-### <span style="color:#22d3ee;">Interface Web (Frontend)</span>
-* 🗂️ **Upload Inteligente**: Suporte a arrastar e soltar (drag-and-drop) de arquivos .txt e .pdf.
-* 📄 **Extração de PDF no Cliente**: O texto de arquivos PDF é extraído diretamente no navegador com pdf.js para maior velocidade e privacidade.
-* 🌙 **Modo Escuro**: Tema adaptável para preferência do usuário, com persistência.
-* 🕑 **Histórico de Classificações**: As últimas análises são salvas no navegador para consulta rápida.
-* ⚡ **Interface Reativa e Moderna**: Design responsivo com animações, toasts de notificação e feedback visual para todas as ações.
+📄 Extração de PDF no Cliente: O texto de arquivos PDF é extraído diretamente no navegador com pdf.js para maior velocidade e privacidade.
 
-### <span style="color:#22d3ee;">Backend Python</span>
-* 🤖 **Classificação com IA de Ponta**: Utiliza o modelo DeBERTa da Hugging Face para classificação "Zero-Shot", compreendendo o contexto do texto.
-* 🛡️ **Lógica Híbrida**: Combina a decisão da IA com uma "rede de segurança" baseada em regras para corrigir potenciais falhas em casos ambíguos.
-* 🔗 **API RESTful Robusta**: Endpoints para classificação, verificação de saúde e documentação.
-* 📝 **Respostas Contextuais**: Geração automática de respostas adaptadas à categoria identificada.
-* 🏷️ **Destaque de Palavras-Chave**: Identifica e retorna as palavras do texto que correspondem a listas de termos produtivos/improdutivos.
+🌙 Modo Escuro: Tema adaptável para preferência do usuário, com persistência.
 
----
+🕑 Histórico de Classificações: As últimas análises são salvas no navegador para consulta rápida.
 
-## 🛠️ <span style="color:#f59e42;">Tecnologias Utilizadas</span>
+⚡ Interface Reativa e Moderna: Design responsivo com animações, toasts de notificação e feedback visual para todas as ações.
 
-### <span style="color:#fbbf24;">Frontend</span>
-* 🌐 **HTML5 e CSS3**
-* 🎨 **Tailwind CSS (via CDN)**
-* 💻 **JavaScript (Vanilla)**
-* 📚 **PDF.js (Mozilla)**
+<span style="color:#22d3ee;">Backend Python</span>
+🤖 Classificação com IA de Ponta: Utiliza o modelo DeBERTa da Hugging Face para classificação "Zero-Shot", compreendendo o contexto do texto.
 
-### <span style="color:#fbbf24;">Backend</span>
-* 🐍 **Python 3.9+**
-* 🔥 **Flask e Flask-CORS**
-* 🤗 **Hugging Face Transformers (para o modelo de IA)**
-* 🧠 **PyTorch**
-* 🗣️ **NLTK (para pré-processamento de texto)**
-* 🔒 **pyOpenSSL (para servidor HTTPS local)**
-* 🚀 **Gunicorn (para deploy em produção)**
+🛡️ Lógica Híbrida: Combina a decisão da IA com uma "rede de segurança" baseada em regras para corrigir potenciais falhas em casos ambíguos.
 
-Instalação e Execução Local
-Pré-requisitos
+🔗 API RESTful Robusta: Endpoints para classificação, verificação de saúde e documentação.
+
+📝 Respostas Contextuais: Geração automática de respostas adaptadas à categoria identificada.
+
+🏷️ Destaque de Palavras-Chave: Identifica e retorna as palavras do texto que correspondem a listas de termos produtivos/improdutivos.
+
+🛠️ <span style="color:#f59e42;">Tecnologias Utilizadas</span>
+<span style="color:#fbbf24;">Frontend</span>
+🌐 HTML5 e CSS3
+
+🎨 Tailwind CSS (via CDN)
+
+💻 JavaScript (Vanilla)
+
+📚 PDF.js (Mozilla)
+
+<span style="color:#fbbf24;">Backend</span>
+🐍 Python 3.9+
+
+🔥 Flask e Flask-CORS
+
+🤗 Hugging Face Transformers (para o modelo de IA)
+
+🧠 PyTorch
+
+🗣️ NLTK (para pré-processamento de texto)
+
+🔒 pyOpenSSL (para servidor HTTPS local)
+
+🚀 Gunicorn (para deploy em produção)
+
+📦 <span style="color:#a855f7;">Instalação e Deploy</span>
+1. Execução Local (para Desenvolvimento)
+Siga estes passos para rodar a aplicação na sua máquina.
+
+Pré-requisitos:
+
 Python 3.9+ e pip
-Git
 
+Git
 1.Backend
 # Clone este repositório 
 git clone [https://github.com/claudioc0/email-classifier-ai.git](https://github.com/claudioc0/email-classifier-ai.git)
