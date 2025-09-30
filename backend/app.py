@@ -28,15 +28,35 @@ shutil.rmtree("/tmp/hf_cache", ignore_errors=True)
 shutil.rmtree("/tmp/nltk_data", ignore_errors=True)
 os.makedirs("/tmp/hf_cache", exist_ok=True)
 os.makedirs("/tmp/nltk_data", exist_ok=True)
+nltk_data_dir = "/tmp/nltk_data"
+nltk.data.path.append(nltk_data_dir)
 
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt", download_dir=nltk_data_dir)
+
+# Baixar stopwords
+try:
+    nltk.data.find("corpora/stopwords")
+except LookupError:
+    nltk.download("stopwords", download_dir=nltk_data_dir)
+
+# Baixar RSLP stemmer
+try:
+    nltk.data.find("stemmers/rslp")
+except LookupError:
+    nltk.download("rslp", download_dir=nltk_data_dir)
 
 nltk_data_dir = "/tmp/nltk_data"
 os.makedirs(nltk_data_dir, exist_ok=True)
 nltk.data.path.append(nltk_data_dir)
 
+os.makedirs("/tmp/hf_cache", exist_ok=True)
 os.environ["TRANSFORMERS_CACHE"] = "/tmp/hf_cache"
 os.environ["HF_DATASETS_CACHE"] = "/tmp/hf_cache"
 os.environ["HF_HOME"] = "/tmp/hf_cache"
+
 
 nltk_packages = ['punkt', 'stopwords', 'rslp']
 
@@ -116,11 +136,7 @@ class EmailClassifier:
         
         text = re.sub(r'[^a-záàâãéèêíïóôõöúçñ\s]', ' ', text)
         
-        try:
-            tokens = word_tokenize(text, language='portuguese')
-        except LookupError:
-            nltk.download('punkt', download_dir=nltk_data_dir)
-            tokens = word_tokenize(text, language='portuguese')
+        tokens = word_tokenize(text, language='portuguese')
         
         processed_tokens = []
         for token in tokens:
