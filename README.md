@@ -1,110 +1,78 @@
-title: Email Classifier AI emoji: 📧 colorFrom: blue colorTo: green sdk: docker app_port: 7860
-<p align="center">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Python-3.9%252B-blue.svg" alt="Versão do Python">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Flask-3.0-green.svg" alt="Flask">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Hugging_Face-Transformers-yellow.svg" alt="Hugging Face Transformers">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Frontend-Vanilla_JS-orange.svg" alt="Frontend">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Status-Completo-brightgreen.svg" alt="Status">
-</p>
+project:
+  name: "Email Classifier AI"
+  description: >
+    Sistema completo de classificação de emails que utiliza um modelo de linguagem
+    avançado (IA) para categorizar conteúdo como Produtivo ou Improdutivo e gerar
+    respostas automáticas personalizadas.
+  author: "Claudio Colombo"
+  status: "Completo"
 
-Email Classifier AI
-Sistema completo de classificação de emails que utiliza um modelo de linguagem avançado (IA) para categorizar conteúdo como Produtivo ou Improdutivo e gerar respostas automáticas personalizadas.
+badges:
+  - "https://img.shields.io/badge/Python-3.9%2B-blue.svg"
+  - "https://img.shields.io/badge/Flask-3.0-green.svg"
+  - "https://img.shields.io/badge/Hugging_Face-Transformers-yellow.svg"
+  - "https://img.shields.io/badge/Frontend-Vanilla_JS-orange.svg"
+  - "https://img.shields.io/badge/Status-Completo-brightgreen.svg"
 
-✨ <span style="color:#0ea5e9;">Funcionalidades</span>
-<span style="color:#22d3ee;">Interface Web (Frontend)</span>
-🗂️ Upload Inteligente: Suporte a arrastar e soltar (drag-and-drop) de arquivos .txt e .pdf.
+features:
+  frontend:
+    - "Upload Inteligente: arrastar e soltar arquivos .txt e .pdf"
+    - "Extração de PDF no cliente com PDF.js"
+    - "Modo Escuro persistente"
+    - "Histórico de Classificações no navegador"
+    - "Interface Reativa com animações e toasts"
+  backend:
+    - "Classificação com IA (DeBERTa - Zero-Shot)"
+    - "Lógica Híbrida com rede de segurança baseada em regras"
+    - "API RESTful com endpoints de saúde e documentação"
+    - "Respostas Contextuais automáticas"
+    - "Destaque de Palavras-Chave produtivas/improdutivas"
 
-📄 Extração de PDF no Cliente: O texto de arquivos PDF é extraído diretamente no navegador com pdf.js para maior velocidade e privacidade.
+technologies:
+  frontend:
+    - "HTML5 e CSS3"
+    - "Tailwind CSS (via CDN)"
+    - "JavaScript (Vanilla)"
+    - "PDF.js (Mozilla)"
+  backend:
+    - "Python 3.9+"
+    - "Flask e Flask-CORS"
+    - "Hugging Face Transformers"
+    - "PyTorch"
+    - "NLTK"
+    - "pyOpenSSL"
+    - "Gunicorn"
 
-🌙 Modo Escuro: Tema adaptável para preferência do usuário, com persistência.
+installation:
+  prerequisites:
+    - "Python 3.9+"
+    - "pip"
+    - "Git"
+  steps:
+    backend:
+      - "git clone https://github.com/claudioc0/email-classifier-ai.git"
+      - "cd email-classifier-ai/project"
+      - "python -m venv venv"
+      - ".\\venv\\Scripts\\Activate.ps1"
+      - "pip install -r backend/requirements.txt"
+      - "python backend/app.py"
+    frontend:
+      - "cd project"
+      - "python -m http.server 8080"
+    access: "http://localhost:8080"
+  notes: >
+    O backend roda em https://localhost:8000. A primeira vez pode exigir
+    aceitar o aviso de segurança no navegador (digitar 'thisisunsafe' no Chrome/Opera).
 
-🕑 Histórico de Classificações: As últimas análises são salvas no navegador para consulta rápida.
+algorithm:
+  description: "Dois estágios para máxima precisão"
+  stages:
+    - "Classificação Primária com IA (DeBERTa)"
+    - "Lógica Híbrida (verificação de palavras-chave spam)"
 
-⚡ Interface Reativa e Moderna: Design responsivo com animações, toasts de notificação e feedback visual para todas as ações.
-
-<span style="color:#22d3ee;">Backend Python</span>
-🤖 Classificação com IA de Ponta: Utiliza o modelo DeBERTa da Hugging Face para classificação "Zero-Shot", compreendendo o contexto do texto.
-
-🛡️ Lógica Híbrida: Combina a decisão da IA com uma "rede de segurança" baseada em regras para corrigir potenciais falhas em casos ambíguos.
-
-🔗 API RESTful Robusta: Endpoints para classificação, verificação de saúde e documentação.
-
-📝 Respostas Contextuais: Geração automática de respostas adaptadas à categoria identificada.
-
-🏷️ Destaque de Palavras-Chave: Identifica e retorna as palavras do texto que correspondem a listas de termos produtivos/improdutivos.
-
-🛠️ <span style="color:#f59e42;">Tecnologias Utilizadas</span>
-<span style="color:#fbbf24;">Frontend</span>
-🌐 HTML5 e CSS3
-
-🎨 Tailwind CSS (via CDN)
-
-💻 JavaScript (Vanilla)
-
-📚 PDF.js (Mozilla)
-
-<span style="color:#fbbf24;">Backend</span>
-🐍 Python 3.9+
-
-🔥 Flask e Flask-CORS
-
-🤗 Hugging Face Transformers (para o modelo de IA)
-
-🧠 PyTorch
-
-🗣️ NLTK (para pré-processamento de texto)
-
-🔒 pyOpenSSL (para servidor HTTPS local)
-
-🚀 Gunicorn (para deploy em produção)
-
-📦 <span style="color:#a855f7;">Instalação e Deploy</span>
-1. Execução Local (para Desenvolvimento)
-Siga estes passos para rodar a aplicação na sua máquina.
-
-Pré-requisitos:
-
-Python 3.9+ e pip
-
-Git
-1.Backend
-# Clone este repositório 
-git clone [https://github.com/claudioc0/email-classifier-ai.git](https://github.com/claudioc0/email-classifier-ai.git)
-cd email-classifier-ai/project
-
-# Crie e ative um ambiente virtual
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-# Instale as dependências
-pip install -r backend/requirements.txt
-
-# Execute o servidor Flask (deixe este terminal aberto)
-python backend/app.py
-
-2. Frontend
-Abra um novo terminal na mesma pasta project.
-# Inicie um servidor HTTP simples (deixe este terminal aberto)
-python -m http.server 8080
-
-3. Acesso
-Acesse http://localhost:8080 no seu navegador.
-
-NOTA IMPORTANTE: O servidor backend roda em https://localhost:8000. Na primeira vez, a aplicação pode parecer "desconectada". Para resolver, abra uma nova aba, acesse https://localhost:8000/health, aceite o aviso de segurança do navegador (no Opera/Chrome, digite thisisunsafe na página de erro) e, em seguida, recarregue a página da aplicação.
-
-Algoritmo de Classificação (Como Funciona)
-O sistema utiliza uma abordagem em dois estágios para máxima precisão:
-
-Classificação Primária com IA (DeBERTa): O texto do e-mail é analisado por um modelo de linguagem pré-treinado que entende o contexto e a semântica, classificando-o como "Produtivo" ou "Improdutivo".
-
-Lógica Híbrida (Rede de Segurança): Se a IA classifica um e-mail como "Produtivo", uma verificação final é feita em busca de palavras-chave de spam de alta certeza (ex: "investimento", "renda extra"). Se encontradas, a classificação é corrigida para "Improdutivo", garantindo maior robustez contra falsos positivos.
-
-## 🚀 <span style="color:#10b981;">Melhorias Futuras</span>
-
-* 🧠 **IA Explicável (XAI)**: Reintegrar uma biblioteca como a **LIME** para extrair as palavras-chave que a IA considerou mais importantes, em vez de usar listas estáticas.
-* 🛠️ **Fine-Tuning do Modelo**: Treinar o modelo DeBERTa com um dataset específico de e-mails para aumentar ainda mais a precisão.
-* 🧪 **Testes Automatizados**: Implementar testes unitários e de integração para a API.
-* 🔄 **Pipeline de CI/CD**: Criar um fluxo de integração e deploy contínuo com GitHub Actions.
-* 📧 **Integração Direta com E-mail**: Conectar-se a APIs como Gmail ou Outlook para classificar e-mails diretamente da caixa de entrada.
-
-> <span style="color:#6366f1;"><strong>Desenvolvido por Claudio Colombo</strong></span>, usando tecnologias modernas para classificação inteligente de emails.
+future_improvements:
+  - "IA Explicável (XAI) com LIME"
+  - "Fine-Tuning do modelo DeBERTa"
+  - "Testes Automatizados (unitários e integração)"
+  - "Pipeline CI/CD com GitHub Actions"
+  - "Integração com APIs de e-mail (Gmail, Outlook)"
