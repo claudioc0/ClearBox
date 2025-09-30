@@ -35,16 +35,6 @@ for pkg in nltk_packages:
         logger.info(f"Downloading NLTK package '{pkg}' to {nltk_data_dir}...")
         nltk.download(pkg, download_dir=nltk_data_dir)
 
-# Download required NLTK data
-
-for pkg in ['punkt', 'stopwords', 'rslp']:
-    try:
-        nltk.data.find(pkg)
-        logger.info(f"NLTK package '{pkg}' found.")
-    except LookupError:
-        logger.info(f"Downloading NLTK package '{pkg}' to {nltk_data_dir}...")
-        nltk.download(pkg, download_dir=nltk_data_dir)
-
 
 
 app = Flask(__name__, static_folder='../static', static_url_path='')
