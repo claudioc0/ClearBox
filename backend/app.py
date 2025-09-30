@@ -37,20 +37,13 @@ for pkg in nltk_packages:
 
 # Download required NLTK data
 
-    logger.info("Downloading NLTK punkt tokenizer...")
-    nltk.download('punkt')
-
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    logger.info("Downloading NLTK stopwords...")
-    nltk.download('stopwords')
-
-try:
-    nltk.data.find('corpora/rslp')
-except LookupError:
-    logger.info("Downloading NLTK RSLP stemmer...")
-    nltk.download('rslp')
+for pkg in ['punkt', 'stopwords', 'rslp']:
+    try:
+        nltk.data.find(pkg)
+        logger.info(f"NLTK package '{pkg}' found.")
+    except LookupError:
+        logger.info(f"Downloading NLTK package '{pkg}' to {nltk_data_dir}...")
+        nltk.download(pkg, download_dir=nltk_data_dir)
 
 
 
