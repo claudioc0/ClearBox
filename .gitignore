@@ -1,0 +1,27 @@
+Arquivo .gitignore para o projeto Email Classifier
+Ambiente Virtual do Python
+venv/
+/venv/
+.venv/
+
+Arquivos de cache do Python
+pycache/
+*.pyc
+*.pyo
+*.pyd
+
+Arquivos de log gerados pela aplicação
+*.log
+email_classifier.log
+
+Arquivos de ambiente
+.env
+
+Arquivos de configuração de IDEs e editores
+.vscode/
+.idea/
+*.swp
+
+Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
