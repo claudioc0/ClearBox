@@ -1,7 +1,7 @@
 // Configuration object
 const CONFIG = {
-    API_URL: 'https://localhost:8000/classify',
-    HEALTH_URL: 'https://localhost:8000/health',
+    API_URL: '/classify',
+    HEALTH_URL: '/health',
     MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
     MIN_TEXT_LENGTH: 10,
     TOAST_DURATION: 5000,

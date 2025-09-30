@@ -49,8 +49,13 @@ except LookupError:
     logger.info("Downloading NLTK punkt_tab...")
     nltk.download('punkt_tab')
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../static', static_url_path='')
 CORS(app)
+
+@app.route('/')
+def root():
+    """Serve o arquivo principal do frontend."""
+    return app.send_static_file('index.html')
 
 class EmailClassifier:
     def __init__(self):
@@ -458,4 +463,4 @@ if __name__ == '__main__':
     logger.info(f"Debug mode: {debug}")
     logger.info(f"AI Model: {'Enabled' if classifier.use_ai_model else 'Disabled (using keywords)'}")
     
-    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False, ssl_context='adhoc')
+    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)
