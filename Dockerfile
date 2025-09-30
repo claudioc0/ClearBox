@@ -10,6 +10,8 @@ RUN python -m nltk.downloader punkt stopwords rslp punkt_tab
 
 COPY . /code/
 
+ENV PATH="/root/.local/bin:${PATH}"
+
 EXPOSE 7860
 
 CMD ["gunicorn", "--bind", "0.0.0.0:7860", "backend.app:app"]
