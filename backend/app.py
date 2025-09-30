@@ -22,29 +22,26 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-
-shutil.rmtree("/tmp/hf_cache", ignore_errors=True)
-shutil.rmtree("/tmp/nltk_data", ignore_errors=True)
-os.makedirs("/tmp/hf_cache", exist_ok=True)
-os.makedirs("/tmp/nltk_data", exist_ok=True)
 nltk_data_dir = "/tmp/nltk_data"
-nltk.data.path.append(nltk_data_dir)
+os.makedirs(nltk_data_dir, exist_ok=True)
+nltk.data.path.insert(0, nltk_data_dir)
+
 
 nltk_packages = ['punkt', 'stopwords', 'rslp', 'punkt_tab']
 for pkg_id in nltk_packages:
     try:
-        # Tenta encontrar o pacote. A forma correta de verificar é pelo ID.
+        # Tenta encontrar o pacote
         if pkg_id == 'rslp':
             nltk.data.find(f'stemmers/{pkg_id}')
         elif pkg_id == 'stopwords':
             nltk.data.find(f'corpora/{pkg_id}')
         else:
-             nltk.data.find(f'tokenizers/{pkg_id}')
-        logger.info(f"NLTK package '{pkg_id}' found.")
+            nltk.data.find(f'tokenizers/{pkg_id}')
+        logger.info(f"NLTK package '{pkg_id}' already downloaded.")
     except LookupError:
-        logger.info(f"Downloading NLTK package '{pkg_id}'...")
-        nltk.download(pkg_id)
+        logger.info(f"Downloading NLTK package '{pkg_id}' to {nltk_data_dir}...")
+        # Descarrega para o diretório temporário
+        nltk.download(pkg_id, download_dir=nltk_data_dir)
 
 
 
