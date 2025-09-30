@@ -93,14 +93,12 @@ class EmailClassifier:
         """Initialize the AI model for zero-shot classification"""
         try:
             logger.info("Initializing AI classification model...")
-            
-            # Use a lightweight multilingual model for better Portuguese support
-            model_name = "MoritzLaurer/deberta-v3-base-mnli-fever-anli"
-            
+            # Usando o modelo BART, que é mais pequeno e adequado para o plano gratuito do Heroku
+            model_name = "facebook/bart-large-mnli"
             self.ai_classifier = pipeline(
                 "zero-shot-classification",
                 model=model_name,
-                device=0 if torch.cuda.is_available() else -1
+                device=-1  # Força o uso de CPU, mais estável no Heroku
             )
             
             logger.info(f"AI model '{model_name}' loaded successfully")
@@ -113,16 +111,12 @@ class EmailClassifier:
 
     def preprocess_text(self, text: str) -> List[str]:
         """Preprocess email text for classification"""
-        # Convert to lowercase
         text = text.lower()
         
-        # Remove special characters and digits, but keep Portuguese characters
         text = re.sub(r'[^a-záàâãéèêíïóôõöúçñ\s]', ' ', text)
         
-        # Tokenize
         tokens = word_tokenize(text, language='portuguese')
         
-        # Remove stopwords and apply stemming
         processed_tokens = []
         for token in tokens:
             if token not in self.stop_words and len(token) > 2:
@@ -141,23 +135,19 @@ class EmailClassifier:
                 "E-mail de marketing, spam, propaganda ou anúncio"
             ]
             
-            # Classify using the AI model
             result = self.ai_classifier(content, candidate_labels, multi_label=False)
             
             # Adicione este log para depuração
             logger.info(f"AI Model Raw Output: {result}")
             
-            # LÓGICA CORRIGIDA
             top_label = result['labels'][0]
             confidence = result['scores'][0]
             
-            # A forma correta de determinar a categoria é pela posição na lista
             if top_label == candidate_labels[0]:
                 category = "Produtivo"
             else:
                 category = "Improdutivo"
             
-            # O resto do método continua igual...
             tokens = self.preprocess_text(content)
             token_set = set(tokens)
             
@@ -175,23 +165,19 @@ class EmailClassifier:
             
         except Exception as e:
             logger.error(f"AI classification failed: {e}")
-            # Fallback to keyword-based classification
             return self.classify_with_keywords(content)
 
     def classify_with_keywords(self, content: str) -> Dict:
         """Fallback keyword-based classification"""
-        # Preprocess the content
         tokens = self.preprocess_text(content)
         token_set = set(tokens)
         
-        # Find matching keywords
         found_productive = list(token_set.intersection(self.productive_keywords))
         found_unproductive = list(token_set.intersection(self.unproductive_keywords))
         
         productive_score = len(found_productive)
         unproductive_score = len(found_unproductive)
         
-        # Determine category
         if productive_score > unproductive_score:
             category = "Produtivo"
             confidence = min(0.95, max(0.6, (productive_score + 1) / (productive_score + unproductive_score + 2)))
@@ -201,7 +187,6 @@ class EmailClassifier:
             confidence = min(0.95, max(0.6, (unproductive_score + 1) / (productive_score + unproductive_score + 2)))
             found_keywords = found_unproductive
         else:
-            # Default to productive with lower confidence
             category = "Produtivo"
             confidence = 0.5
             found_keywords = found_productive if found_productive else []
@@ -210,10 +195,9 @@ class EmailClassifier:
             "category": category,
             "confidence": confidence,
             "method": "Keywords",
-            "found_keywords": found_keywords[:10]  # Limit to top 10
+            "found_keywords": found_keywords[:10]  
         }
 
-    # Substitua o método classify_email inteiro por este
 
     def classify_email(self, content: str) -> Dict:
         """Main classification method with Hybrid Logic"""
@@ -244,7 +228,6 @@ class EmailClassifier:
                 classification_result["confidence"] = 0.90 
                 classification_result["method"] = "AI + Hybrid Rule"
 
-        # O resto do código continua como antes
         suggested_response = self.generate_response(classification_result["category"], content)
         
         reasoning = self.generate_reasoning(
@@ -275,7 +258,6 @@ class EmailClassifier:
     def generate_response(self, category: str, content: str) -> str:
         """Generate appropriate response based on classification"""
         if category == "Produtivo":
-            # Check for specific types of productive emails
             content_lower = content.lower()
             
             if any(word in content_lower for word in ['reuniao', 'meeting', 'encontro', 'agenda']):
@@ -369,7 +351,6 @@ Indicadores encontrados:
         
         return reasoning
 
-# Initialize classifier
 classifier = EmailClassifier()
 
 @app.route('/classify', methods=['POST'])
@@ -388,12 +369,10 @@ def classify_email():
             logger.warning(f"Content too short: {len(content)} characters")
             return jsonify({'error': 'Email content too short for classification (minimum 10 characters)'}), 400
         
-        # Log request details (without sensitive content)
         source = data.get('source', 'unknown')
         filename = data.get('filename', 'N/A')
         logger.info(f"Classification request - Source: {source}, Filename: {filename}, Length: {len(content)}")
         
-        # Classify the email
         result = classifier.classify_email(content)
         
         logger.info(f"Classification successful - Category: {result['category']}, Confidence: {result['confidence']:.2f}")

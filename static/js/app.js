@@ -1,4 +1,3 @@
-// Configuration object
 const CONFIG = {
     API_URL: '/classify',
     HEALTH_URL: '/health',
@@ -9,7 +8,6 @@ const CONFIG = {
     THEME_KEY: 'email-classifier-theme',
     MAX_HISTORY_ITEMS: 10,
     
-    // DOM selectors
     SELECTORS: {
         dropZone: '#drop-zone',
         fileInput: '#file-input',
@@ -78,13 +76,11 @@ class EmailClassifier {
     }
 
     setupEventListeners() {
-        // Use event delegation for better performance and maintainability
         document.addEventListener('click', this.handleDocumentClick.bind(this));
         document.addEventListener('change', this.handleDocumentChange.bind(this));
         document.addEventListener('input', this.handleDocumentInput.bind(this));
         document.addEventListener('keydown', this.handleDocumentKeydown.bind(this));
         
-        // Drag and drop events
         this.setupDragAndDrop();
     }
 
@@ -92,42 +88,34 @@ class EmailClassifier {
         const target = event.target;
         const closest = target.closest.bind(target);
         
-        // Theme toggle
         if (closest('#theme-toggle')) {
             this.toggleTheme();
         }
         
-        // Drop zone click
         else if (closest(CONFIG.SELECTORS.dropZone)) {
             document.querySelector(CONFIG.SELECTORS.fileInput).click();
         }
         
-        // Submit text button
         else if (closest(CONFIG.SELECTORS.submitText)) {
             this.handleTextSubmit();
         }
         
-        // Copy response button
         else if (closest('.copy-response-btn')) {
             this.copyResponse(target);
         }
         
-        // New classification button
         else if (closest('.new-classification-btn')) {
             this.resetInterface();
         }
         
-        // Clear history button
         else if (closest(CONFIG.SELECTORS.clearHistory)) {
             this.clearHistory();
         }
         
-        // History item click
         else if (closest('.history-item')) {
             this.loadHistoryItem(target.closest('.history-item'));
         }
         
-        // Toast close button
         else if (closest('.toast-close')) {
             this.closeToast(target.closest('.toast'));
         }
@@ -136,7 +124,6 @@ class EmailClassifier {
     handleDocumentChange(event) {
         const target = event.target;
         
-        // File input change
         if (target.matches(CONFIG.SELECTORS.fileInput)) {
             const files = target.files;
             if (files && files.length > 0) {
@@ -148,7 +135,6 @@ class EmailClassifier {
     handleDocumentInput(event) {
         const target = event.target;
         
-        // Email text input
         if (target.matches(CONFIG.SELECTORS.emailText)) {
             this.updateCharCount();
         }
@@ -157,7 +143,6 @@ class EmailClassifier {
     handleDocumentKeydown(event) {
         const target = event.target;
         
-        // Ctrl+Enter to submit text
         if (target.matches(CONFIG.SELECTORS.emailText) && event.ctrlKey && event.key === 'Enter') {
             event.preventDefault();
             const submitBtn = document.querySelector(CONFIG.SELECTORS.submitText);
@@ -219,25 +204,21 @@ class EmailClassifier {
         const text = textarea.value.trim();
         charCount.textContent = text.length.toString();
         
-        // Enable/disable submit button
         submitBtn.disabled = text.length < CONFIG.MIN_TEXT_LENGTH;
     }
 
     async handleFile(file) {
-        // Validate file type
         const validTypes = ['text/plain', 'application/pdf'];
         if (!validTypes.includes(file.type)) {
             this.showToast('Tipo de arquivo não suportado. Use apenas arquivos .txt ou .pdf', 'error');
             return;
         }
 
-        // Validate file size
         if (file.size > CONFIG.MAX_FILE_SIZE) {
             this.showToast('Arquivo muito grande. Tamanho máximo: 10MB', 'error');
             return;
         }
 
-        // Show file info
         const fileName = document.querySelector(CONFIG.SELECTORS.fileName);
         const fileInfo = document.querySelector(CONFIG.SELECTORS.fileInfo);
         
@@ -312,7 +293,6 @@ class EmailClassifier {
             
             await this.processEmail(emailData);
             
-            // Clear textarea after successful submission
             textarea.value = '';
             this.updateCharCount();
         } catch (error) {
@@ -349,13 +329,11 @@ class EmailClassifier {
             });
 
             if (!response.ok) {
-                // Try to get error message from response
                 let errorMessage = `HTTP error! status: ${response.status}`;
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorMessage;
                 } catch (e) {
-                    // If can't parse JSON, use default message
                 }
                 throw new Error(errorMessage);
             }
@@ -365,19 +343,15 @@ class EmailClassifier {
         } catch (error) {
             console.error('API Error:', error);
             
-            // Show API error toast
             this.showToast('Erro na API: ' + error.message + '. Usando resposta simulada.', 'warning');
             
-            // Fallback to mock response for demonstration
             return this.getMockResponse(emailData);
         }
     }
 
     getMockResponse(emailData) {
-        // Enhanced mock classification logic
         const content = emailData.content.toLowerCase();
         
-        // Keywords that suggest productive content
         const productiveKeywords = [
             'reunião', 'projeto', 'prazo', 'entrega', 'relatório', 'apresentação',
             'meeting', 'project', 'deadline', 'delivery', 'report', 'presentation',
@@ -385,7 +359,6 @@ class EmailClassifier {
             'cronograma', 'planejamento', 'estratégia', 'desenvolvimento', 'análise'
         ];
         
-        // Keywords that suggest unproductive content
         const unproductiveKeywords = [
             'spam', 'promoção', 'desconto', 'oferta', 'grátis', 'ganhe', 'prêmio',
             'promotion', 'discount', 'offer', 'free', 'win', 'prize', 'lottery',
@@ -495,52 +468,41 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         const content = document.querySelector(CONFIG.SELECTORS.resultContent);
         const errorContainer = document.querySelector(CONFIG.SELECTORS.errorContainer);
 
-        // Hide error container
         errorContainer.classList.add('hidden');
 
-        // Show result container
         container.classList.remove('hidden');
 
-        // Generate result HTML using safe DOM manipulation
         this.renderResult(content, result);
     }
 
     renderResult(container, result) {
-        // Clear container
         container.innerHTML = '';
         
         const isProductive = result.category === 'Produtivo';
         const categoryColor = isProductive ? 'green' : 'red';
         
-        // Create main container
         const mainDiv = document.createElement('div');
         mainDiv.className = 'space-y-6';
         
-        // Classification Result
         const classificationDiv = this.createClassificationSection(result, categoryColor);
         mainDiv.appendChild(classificationDiv);
         
-        // Confidence Meter
         const confidenceDiv = this.createConfidenceSection(result);
         mainDiv.appendChild(confidenceDiv);
         
-        // Suggested Response
         const responseDiv = this.createResponseSection(result);
         mainDiv.appendChild(responseDiv);
         
-        // Analysis Details
         if (result.reasoning) {
             const analysisDiv = this.createAnalysisSection(result);
             mainDiv.appendChild(analysisDiv);
         }
         
-        // Highlighted Content
         if (result.highlightedKeywords && result.originalContent) {
             const highlightedDiv = this.createHighlightedContentSection(result);
             mainDiv.appendChild(highlightedDiv);
         }
         
-        // Action Buttons
         const actionsDiv = this.createActionButtons();
         mainDiv.appendChild(actionsDiv);
         
@@ -619,7 +581,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         title.textContent = 'Nível de Confiança';
         headerDiv.appendChild(title);
         
-        // Progress bar
         const progressContainer = document.createElement('div');
         progressContainer.className = 'relative';
         
@@ -631,7 +592,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         progressBar.className = `progress-bar h-3 rounded-full transition-all duration-1000 ease-out`;
         progressBar.style.width = `${confidencePercent}%`;
         
-        // Color based on confidence level
         if (confidencePercent >= 80) {
             progressBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
         } else if (confidencePercent >= 60) {
@@ -823,7 +783,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         const textToCopy = textarea ? textarea.value : button.dataset.response;
         
         navigator.clipboard.writeText(textToCopy).then(() => {
-            // Show success feedback
             const originalHTML = button.innerHTML;
             button.innerHTML = `
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -846,18 +805,15 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
     }
 
     resetInterface() {
-        // Clear file input
         const fileInput = document.querySelector(CONFIG.SELECTORS.fileInput);
         const fileInfo = document.querySelector(CONFIG.SELECTORS.fileInfo);
         fileInput.value = '';
         fileInfo.classList.add('hidden');
         
-        // Clear text input
         const textarea = document.querySelector(CONFIG.SELECTORS.emailText);
         textarea.value = '';
         this.updateCharCount();
         
-        // Hide result containers
         const resultContainer = document.querySelector(CONFIG.SELECTORS.resultContainer);
         const errorContainer = document.querySelector(CONFIG.SELECTORS.errorContainer);
         resultContainer.classList.add('hidden');
@@ -871,10 +827,8 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         const errorContainer = document.querySelector(CONFIG.SELECTORS.errorContainer);
         const errorMessage = document.querySelector(CONFIG.SELECTORS.errorMessage);
 
-        // Hide result container
         container.classList.add('hidden');
 
-        // Show error container
         errorContainer.classList.remove('hidden');
         errorMessage.textContent = message;
     }
@@ -889,10 +843,8 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         const messageElement = toast.querySelector('.toast-message');
         const closeButton = toast.querySelector('.toast-close');
         
-        // Set message
         messageElement.textContent = message;
         
-        // Set icon and colors based on type
         let iconPath, colorClasses;
         switch (type) {
             case 'success':
@@ -921,12 +873,10 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         
         container.appendChild(toast);
         
-        // Auto-remove after duration
         const timeoutId = setTimeout(() => {
             this.closeToast(toastElement);
         }, CONFIG.TOAST_DURATION);
         
-        // Store timeout ID for manual close
         toastElement.dataset.timeoutId = timeoutId;
     }
 
@@ -945,7 +895,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         }, 300);
     }
 
-    // History management
     loadHistory() {
         try {
             const history = localStorage.getItem(CONFIG.HISTORY_KEY);
@@ -979,7 +928,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         
         this.history.unshift(historyItem);
         
-        // Keep only the latest items
         if (this.history.length > CONFIG.MAX_HISTORY_ITEMS) {
             this.history = this.history.slice(0, CONFIG.MAX_HISTORY_ITEMS);
         }
@@ -1017,7 +965,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         const time = historyItem.querySelector('.history-time');
         const preview = historyItem.querySelector('.history-preview');
         
-        // Set category with appropriate styling
         const isProductive = item.category === 'Produtivo';
         category.textContent = item.category;
         category.className = `history-category text-sm font-semibold px-2 py-1 rounded ${
@@ -1026,7 +973,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
                 : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
         }`;
         
-        // Set time
         const date = new Date(item.timestamp);
         time.textContent = date.toLocaleString('pt-BR', {
             day: '2-digit',
@@ -1035,13 +981,11 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
             minute: '2-digit'
         });
         
-        // Set preview
         const previewText = item.content.length > 100 
             ? item.content.substring(0, 100) + '...' 
             : item.content;
         preview.textContent = previewText;
         
-        // Store item data for click handler
         itemElement.dataset.historyId = item.id;
         
         return historyItem;
@@ -1053,7 +997,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
         
         if (!item) return;
         
-        // Simulate the result display
         const result = {
             category: item.category,
             confidence: item.confidence,
@@ -1068,7 +1011,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
 
 
         confirmClearHistory() {
-        // Create confirmation modal
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in';
         
@@ -1096,7 +1038,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
             </div>
         `;
         
-        // Add event listeners
         const cancelBtn = modal.querySelector('.cancel-clear');
         const confirmBtn = modal.querySelector('.confirm-clear');
         
@@ -1109,14 +1050,12 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
             this.closeModal(modal);
         });
         
-        // Close on backdrop click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 this.closeModal(modal);
             }
         });
         
-        // Close on Escape key
         const handleEscape = (e) => {
             if (e.key === 'Escape') {
                 this.closeModal(modal);
@@ -1166,7 +1105,6 @@ A análise identificou padrões típicos de emails promocionais, spam ou conteú
     }
 }
 
-// Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new EmailClassifier();
 });

@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        // Configure PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         
         tailwind.config = {
@@ -203,12 +202,10 @@
     </style>
 </head>
 <body class="antialiased">
-    <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
     
     <div class="min-h-screen py-8 px-4">
         <div class="max-w-6xl mx-auto">
-            <!-- Header -->
             <div class="text-center mb-12 animate-fade-in">
                 <div class="flex items-center justify-center mb-6">
                     <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl mr-4 shadow-lg">
@@ -217,7 +214,6 @@
                         </svg>
                     </div>
                     
-                    <!-- Dark Mode Toggle -->
                     <button id="theme-toggle" class="p-3 rounded-xl bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border border-gray-200 dark:border-gray-600 hover:bg-white dark:hover:bg-slate-600 transition-all duration-200 shadow-lg">
                         <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-gray-700 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
@@ -256,9 +252,7 @@
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <!-- Input Section -->
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- File Upload -->
                     <div class="glass-effect rounded-xl p-6 animate-slide-up">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                             <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,7 +298,6 @@
                         </div>
                     </div>
 
-                    <!-- Text Input -->
                     <div class="glass-effect rounded-xl p-6 animate-slide-up">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                             <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -352,9 +345,7 @@ João"
                     </div>
                 </div>
                 
-                <!-- Results and History Section -->
                 <div class="space-y-6">
-                    <!-- Loading Spinner -->
                     <div id="loading-container" class="hidden">
                         <div class="glass-effect rounded-xl p-6 text-center animate-slide-up">
                             <div class="space-y-4">
@@ -384,7 +375,6 @@ João"
                         </div>
                     </div>
 
-                    <!-- Result Display -->
                     <div id="result-container" class="hidden">
                         <div class="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-100 dark:border-gray-700 rounded-xl p-6 shadow-lg animate-slide-up">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
@@ -395,12 +385,10 @@ João"
                             </h3>
                             
                             <div id="result-content">
-                                <!-- Content will be inserted here -->
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Error Display -->
                     <div id="error-container" class="hidden">
                         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 animate-slide-up">
                             <div class="flex items-center mb-3">
@@ -413,7 +401,6 @@ João"
                         </div>
                     </div>
                     
-                    <!-- History Section -->
                     <div id="history-section" class="glass-effect rounded-xl p-6 animate-slide-up">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
@@ -444,13 +431,11 @@ João"
         </div>
     </div>
 
-    <!-- Templates -->
     <template id="toast-template">
         <div class="toast bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-4 mb-3 animate-toast-in">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
                     <svg class="toast-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <!-- Icon will be set dynamically -->
                     </svg>
                 </div>
                 <div class="ml-3 flex-1">
