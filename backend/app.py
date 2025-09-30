@@ -12,6 +12,7 @@ from nltk.stem import RSLPStemmer
 from datetime import datetime
 from transformers import pipeline
 import torch
+from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
 
 # Configure logging
 logging.basicConfig(
@@ -24,6 +25,10 @@ logger = logging.getLogger(__name__)
 nltk_data_dir = "/tmp/nltk_data"
 os.makedirs(nltk_data_dir, exist_ok=True)
 nltk.data.path.append(nltk_data_dir)
+
+os.environ["TRANSFORMERS_CACHE"] = "/tmp/hf_cache"
+os.environ["HF_DATASETS_CACHE"] = "/tmp/hf_cache"
+os.environ["HF_HOME"] = "/tmp/hf_cache"
 
 nltk_packages = ['punkt', 'stopwords', 'rslp']
 
@@ -41,7 +46,7 @@ app = Flask(__name__, static_folder='../static', static_url_path='')
 CORS(app)
 
 @app.route('/')
-def root():
+def api_info():
     """Serve o arquivo principal do frontend."""
     return app.send_static_file('index.html')
 
@@ -81,8 +86,8 @@ class EmailClassifier:
         """Initialize the AI model for zero-shot classification"""
         try:
             logger.info("Initializing AI classification model...")
-            # Usando o modelo BART, que é mais pequeno e adequado para o plano gratuito do Heroku
-            model_name = "facebook/bart-large-mnli"
+            # Usando o modelo  que é mais pequeno e adequado para o plano gratuito
+            model_name = "valhalla/distilbart-mnli-12-3"
             self.ai_classifier = pipeline(
                 "zero-shot-classification",
                 model=model_name,
@@ -386,8 +391,8 @@ def health_check():
     logger.info("Health check requested")
     return jsonify(health_status)
 
-@app.route('/', methods=['GET'])
-def root():
+@app.route('/info', methods=['GET'])
+def serve_frontend():
     """Root endpoint with API information"""
     return jsonify({
         'service': 'Email Classifier API',
