@@ -5,11 +5,12 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 COPY ./nltk.txt /code/nltk.txt
 
-RUN python -m nltk.downloader -d /usr/share/nltk_data punkt stopwords rslp punkt_tab
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN python -m nltk.downloader -d /usr/share/nltk_data -r /code/nltk.txt
 
-COPY . /code/
+COPY ./backend /code/backend
+COPY ./static /code/static
 
 EXPOSE 7860
 
