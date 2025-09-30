@@ -1,6 +1,16 @@
+---
+title: "Email Classifier AI"
+emoji: "📧"
+colorFrom: "blue"
+colorTo: "green"
+sdk: "docker"
+app_file: "app.py"
+pinned: false
+---
+
+
 project:
-  name: "Email Classifier AI"
-  description: >
+ description: >
     Sistema completo de classificação de emails que utiliza um modelo de linguagem
     avançado (IA) para categorizar conteúdo como Produtivo ou Improdutivo e gerar
     respostas automáticas personalizadas.
