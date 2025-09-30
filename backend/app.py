@@ -2,9 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import shutil, os
 import re
-import string
 import logging
-from typing import Dict, List, Tuple
+from typing import Dict, List
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -12,7 +11,6 @@ from nltk.stem import RSLPStemmer
 from datetime import datetime
 from transformers import pipeline
 import torch
-from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
 
 # Configure logging
 logging.basicConfig(
@@ -33,23 +31,21 @@ os.makedirs("/tmp/nltk_data", exist_ok=True)
 nltk_data_dir = "/tmp/nltk_data"
 nltk.data.path.append(nltk_data_dir)
 
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    logger.info("Downloading NLTK punkt tokenizer...")
-    nltk.download('punkt')
+nltk_packages = ['punkt', 'stopwords', 'rslp', 'punkt_tab']
+for pkg_id in nltk_packages:
+    try:
+        # Tenta encontrar o pacote. A forma correta de verificar é pelo ID.
+        if pkg_id == 'rslp':
+            nltk.data.find(f'stemmers/{pkg_id}')
+        elif pkg_id == 'stopwords':
+            nltk.data.find(f'corpora/{pkg_id}')
+        else:
+             nltk.data.find(f'tokenizers/{pkg_id}')
+        logger.info(f"NLTK package '{pkg_id}' found.")
+    except LookupError:
+        logger.info(f"Downloading NLTK package '{pkg_id}'...")
+        nltk.download(pkg_id)
 
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    logger.info("Downloading NLTK stopwords...")
-    nltk.download('stopwords')
-
-try:
-    nltk.data.find('corpora/rslp')
-except LookupError:
-    logger.info("Downloading NLTK RSLP stemmer...")
-    nltk.download('rslp')
 
 
 app = Flask(__name__, static_folder='../static', static_url_path='')
