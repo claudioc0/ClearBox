@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
+import shutil, os
 import re
 import string
 import logging
@@ -21,6 +21,14 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
+
+
+
+shutil.rmtree("/tmp/hf_cache", ignore_errors=True)
+shutil.rmtree("/tmp/nltk_data", ignore_errors=True)
+os.makedirs("/tmp/hf_cache", exist_ok=True)
+os.makedirs("/tmp/nltk_data", exist_ok=True)
+
 
 nltk_data_dir = "/tmp/nltk_data"
 os.makedirs(nltk_data_dir, exist_ok=True)
