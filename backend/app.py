@@ -18,7 +18,9 @@ from transformers import pipeline, AutoModelForSequenceClassification, AutoToken
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
+    handlers=[
+        logging.StreamHandler()  # Envia logs para a saída padrão
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -32,42 +34,22 @@ nltk_data_dir = "/tmp/nltk_data"
 nltk.data.path.append(nltk_data_dir)
 
 try:
-    nltk.data.find("tokenizers/punkt")
+    nltk.data.find('tokenizers/punkt')
 except LookupError:
-    nltk.download("punkt", download_dir=nltk_data_dir)
+    logger.info("Downloading NLTK punkt tokenizer...")
+    nltk.download('punkt')
 
-# Baixar stopwords
 try:
-    nltk.data.find("corpora/stopwords")
+    nltk.data.find('corpora/stopwords')
 except LookupError:
-    nltk.download("stopwords", download_dir=nltk_data_dir)
+    logger.info("Downloading NLTK stopwords...")
+    nltk.download('stopwords')
 
-# Baixar RSLP stemmer
 try:
-    nltk.data.find("stemmers/rslp")
+    nltk.data.find('corpora/rslp')
 except LookupError:
-    nltk.download("rslp", download_dir=nltk_data_dir)
-
-nltk_data_dir = "/tmp/nltk_data"
-os.makedirs(nltk_data_dir, exist_ok=True)
-nltk.data.path.append(nltk_data_dir)
-
-os.makedirs("/tmp/hf_cache", exist_ok=True)
-os.environ["TRANSFORMERS_CACHE"] = "/tmp/hf_cache"
-os.environ["HF_DATASETS_CACHE"] = "/tmp/hf_cache"
-os.environ["HF_HOME"] = "/tmp/hf_cache"
-
-
-nltk_packages = ['punkt', 'stopwords', 'rslp']
-
-for pkg in nltk_packages:
-    try:
-        nltk.data.find(pkg)
-        logger.info(f"NLTK package '{pkg}' found.")
-    except LookupError:
-        logger.info(f"Downloading NLTK package '{pkg}' to {nltk_data_dir}...")
-        nltk.download(pkg, download_dir=nltk_data_dir)
-
+    logger.info("Downloading NLTK RSLP stemmer...")
+    nltk.download('rslp')
 
 
 app = Flask(__name__, static_folder='../static', static_url_path='')
@@ -115,7 +97,7 @@ class EmailClassifier:
         try:
             logger.info("Initializing AI classification model...")
             # Usando o modelo  que é mais pequeno e adequado para o plano gratuito
-            model_name = "valhalla/distilbart-mnli-12-3"
+            model_name = "facebook/bart-large-mnli"
             self.ai_classifier = pipeline(
                 "zero-shot-classification",
                 model=model_name,
