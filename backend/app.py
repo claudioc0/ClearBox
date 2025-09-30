@@ -108,7 +108,11 @@ class EmailClassifier:
         
         text = re.sub(r'[^a-záàâãéèêíïóôõöúçñ\s]', ' ', text)
         
-        tokens = word_tokenize(text, language='portuguese')
+        try:
+            tokens = word_tokenize(text, language='portuguese')
+        except LookupError:
+            nltk.download('punkt', download_dir=nltk_data_dir)
+            tokens = word_tokenize(text, language='portuguese')
         
         processed_tokens = []
         for token in tokens:
