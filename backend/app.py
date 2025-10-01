@@ -155,12 +155,10 @@ class EmailClassifier:
                 category = "Improdutivo"
             
             tokens = self.preprocess_text(content)
-            token_set = set(tokens)
-            
             if category == "Produtivo":
-                found_keywords = list(token_set.intersection(self.productive_keywords))
+                found_keywords = self.find_keywords(tokens, self.productive_keywords)
             else:
-                found_keywords = list(token_set.intersection(self.unproductive_keywords))
+                found_keywords = self.find_keywords(tokens, self.unproductive_keywords)
             
             return {
                 "category": category,
@@ -176,10 +174,8 @@ class EmailClassifier:
     def classify_with_keywords(self, content: str) -> Dict:
         """Fallback keyword-based classification"""
         tokens = self.preprocess_text(content)
-        token_set = set(tokens)
-        
-        found_productive = list(token_set.intersection(self.productive_keywords))
-        found_unproductive = list(token_set.intersection(self.unproductive_keywords))
+        found_productive = self.find_keywords(tokens, self.productive_keywords)
+        found_unproductive = self.find_keywords(tokens, self.unproductive_keywords)
         
         productive_score = len(found_productive)
         unproductive_score = len(found_unproductive)
@@ -356,6 +352,20 @@ Indicadores encontrados:
             reasoning += "\n\nA análise identificou padrões típicos de emails promocionais, spam ou conteúdo não relacionado a atividades profissionais, sugerindo que pode ser tratado com menor prioridade."
         
         return reasoning
+
+    def find_keywords(self, tokens, keyword_set):
+        """Identifica palavras-chave usando stemming e correspondência parcial"""
+        found = set()
+        for token in tokens:
+            for kw in keyword_set:
+                # Stemming para ambos
+                stemmed_kw = self.stemmer.stem(kw)
+                if stemmed_kw in token or token in stemmed_kw:
+                    found.add(kw)
+                # Correspondência parcial (substring)
+                elif kw in token or token in kw:
+                    found.add(kw)
+        return list(found)
 
 classifier = EmailClassifier()
 
