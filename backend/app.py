@@ -214,11 +214,15 @@ class EmailClassifier:
             classification_result = self.classify_with_keywords(content)
         
         # PASSO 2: LÓGICA HÍBRIDA (REDE DE SEGURANÇA)
-        # Se a IA classificou como Produtivo, fazemos uma verificação final
+
         # para garantir que não seja um spam disfarçado.
         if classification_result["category"] == "Produtivo" and classification_result["method"] == "AI":
-            # Palavras-chave de spam de alta certeza
-            spam_triggers = {'investimento', 'renda', 'lucro', 'ganhar dinheiro', 'gratis', 'oportunidade unica', 'clique aqui', 'promocao'}
+            # Palavras-chave de spam de alta certeza (PT e EN, incluindo expressões compostas)
+            spam_triggers = {
+                'investimento', 'renda', 'lucro', 'ganhar dinheiro', 'gratis', 'oportunidade unica', 'clique aqui', 'promocao',
+                'lottery', 'prize', 'winner', 'click here', 'urgent', 'confidential', 'agent', 'claim your prize', 'selected as a winner',
+                'contact our agent', 'provide your details', 'annual international lottery', 'you have won', 'usd', 'premio', 'ganhe', 'oferta'
+            }
             content_lower = content.lower()
             
             # Se alguma palavra-gatilho de spam for encontrada...
@@ -227,7 +231,7 @@ class EmailClassifier:
                 # Inverte a classificação para Improdutivo
                 classification_result["category"] = "Improdutivo"
                 # Inverte a confiança para refletir a certeza da regra
-                classification_result["confidence"] = 0.90 
+                classification_result["confidence"] = 0.95 
                 classification_result["method"] = "AI + Hybrid Rule"
 
         suggested_response = self.generate_response(classification_result["category"], content)
