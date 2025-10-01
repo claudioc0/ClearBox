@@ -1,4 +1,5 @@
 import os
+import nltk
 
 # --- Configuração de diretórios e variáveis de ambiente ---
 hf_cache_dir = "/tmp/hf_cache"
@@ -20,7 +21,6 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import RSLPStemmer
