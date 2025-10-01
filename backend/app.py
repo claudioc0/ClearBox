@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 # Configurar diretório de cache seguro para Hugging Face
-hf_cache_dir = str(pathlib.Path.home() / ".cache" / "huggingface")
+hf_cache_dir = str(pathlib.Path.home() / "hf_cache")
 os.makedirs(hf_cache_dir, exist_ok=True)
 os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
 os.environ["HF_HOME"] = hf_cache_dir
