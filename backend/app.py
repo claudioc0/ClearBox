@@ -22,9 +22,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-nltk_data_dir = "/tmp/nltk_data"
+temp_dir = "/tmp"
+nltk_data_dir = os.path.join(temp_dir, "nltk_data")
+hf_cache_dir = os.path.join(temp_dir, "hf_cache")
+
 os.makedirs(nltk_data_dir, exist_ok=True)
+os.makedirs(hf_cache_dir, exist_ok=True)
+
+# Força o NLTK e a Hugging Face a usarem os diretórios temporários
 nltk.data.path.insert(0, nltk_data_dir)
+os.environ['TRANSFORMERS_CACHE'] = hf_cache_dir
+os.environ['HF_HOME'] = hf_cache_dir
 
 
 nltk_packages = ['punkt', 'stopwords', 'rslp', 'punkt_tab']
