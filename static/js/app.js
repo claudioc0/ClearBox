@@ -109,7 +109,7 @@ class EmailClassifier {
         }
         
         else if (closest(CONFIG.SELECTORS.clearHistory)) {
-            this.clearHistory();
+            this.confirmClearHistory();
         }
         
         else if (closest('.history-item')) {
