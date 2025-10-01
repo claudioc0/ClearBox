@@ -1,44 +1,44 @@
 import os
-import nltk
 
-# --- Configuração de diretórios e variáveis de ambiente ---
+# Configurar diretório de cache seguro para Hugging Face
 hf_cache_dir = "/tmp/hf_cache"
 os.makedirs(hf_cache_dir, exist_ok=True)
 os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
 os.environ["HF_HOME"] = hf_cache_dir
 os.environ["HF_DATASETS_CACHE"] = hf_cache_dir
 
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import re
+import logging
+from typing import Dict, List
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import RSLPStemmer
+from datetime import datetime
+from transformers import pipeline
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Envia logs para a saída padrão
+    ]
+)
+logger = logging.getLogger(__name__)
+
+
 nltk_data_dir = "/tmp/nltk_data"
 os.makedirs(nltk_data_dir, exist_ok=True)
 nltk.data.path.insert(0, nltk_data_dir)
 
 
-import re
-import logging
-from typing import Dict, List
-from datetime import datetime
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import RSLPStemmer
-
-from transformers import pipeline
-
-# --- Logging ---
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
-
-# --- Download dos pacotes NLTK necessários ---
-nltk_packages = ['punkt', 'stopwords', 'rslp']
+nltk_packages = ['punkt', 'stopwords', 'rslp', 'punkt_tab']
 for pkg_id in nltk_packages:
     try:
+        # Tenta encontrar o pacote
         if pkg_id == 'rslp':
             nltk.data.find(f'stemmers/{pkg_id}')
         elif pkg_id == 'stopwords':
@@ -48,20 +48,25 @@ for pkg_id in nltk_packages:
         logger.info(f"NLTK package '{pkg_id}' already downloaded.")
     except LookupError:
         logger.info(f"Downloading NLTK package '{pkg_id}' to {nltk_data_dir}...")
+        # Descarrega para o diretório temporário
         nltk.download(pkg_id, download_dir=nltk_data_dir)
 
-# --- Flask App ---
 app = Flask(__name__, static_folder='../static', static_url_path='')
 CORS(app)
 
 @app.route('/')
 def api_info():
+    """Serve o arquivo principal do frontend."""
     return app.send_static_file('index.html')
 
 class EmailClassifier:
     def __init__(self):
         self.stemmer = RSLPStemmer()
         self.stop_words = set(stopwords.words('portuguese') + stopwords.words('english'))
+        
+        self.ai_classifier = None
+        self.use_ai_model = self._initialize_ai_model()
+        
         self.productive_keywords = {
             'reuniao', 'projeto', 'prazo', 'entrega', 'relatorio', 'apresentacao',
             'meeting', 'project', 'deadline', 'delivery', 'report', 'presentation',
@@ -71,6 +76,7 @@ class EmailClassifier:
             'colaboracao', 'equipe', 'time', 'departamento', 'gerencia', 'diretoria',
             'solucao', 'problema', 'discussao', 'feedback', 'revisao', 'aprovacao'
         }
+        
         self.unproductive_keywords = {
             'spam', 'promocao', 'desconto', 'oferta', 'gratis', 'ganhe', 'premio',
             'promotion', 'discount', 'offer', 'free', 'win', 'prize', 'lottery',
@@ -80,78 +86,95 @@ class EmailClassifier:
             'profit', 'ganhar', 'earn', 'facil', 'easy', 'rapido', 'quick',
             'compre', 'buy', 'venda', 'sale', 'barato', 'cheap', 'economize'
         }
-        self.ai_classifier = None
-        self.use_ai_model = self._initialize_ai_model()
+        
         logger.info(f"EmailClassifier initialized. AI Model: {'Enabled' if self.use_ai_model else 'Disabled'}")
 
     def _initialize_ai_model(self):
+        """Initialize the AI model for zero-shot classification"""
         try:
             logger.info("Initializing AI classification model...")
+            # Usando o modelo  que é mais pequeno e adequado para o plano gratuito
             model_name = "facebook/bart-large-mnli"
             self.ai_classifier = pipeline(
                 "zero-shot-classification",
                 model=model_name,
-                device=-1,
-                cache_dir=hf_cache_dir
+                device=-1,  # Força o uso de CPU
+                cache_dir=hf_cache_dir  # Força o cache para a pasta com permissão
             )
+            
             logger.info(f"AI model '{model_name}' loaded successfully")
             return True
+            
         except Exception as e:
             logger.warning(f"Failed to initialize AI model: {e}")
             logger.info("Falling back to keyword-based classification")
             return False
 
     def preprocess_text(self, text: str) -> List[str]:
+        """Preprocess email text for classification"""
         text = text.lower()
+        
         text = re.sub(r'[^a-záàâãéèêíïóôõöúçñ\s]', ' ', text)
+        
         tokens = word_tokenize(text, language='portuguese')
-        return [
-            self.stemmer.stem(token)
-            for token in tokens
-            if token not in self.stop_words and len(token) > 2
-        ]
-
-    def find_keywords(self, tokens, keyword_set):
-        found = set()
+        
+        processed_tokens = []
         for token in tokens:
-            for kw in keyword_set:
-                stemmed_kw = self.stemmer.stem(kw)
-                if stemmed_kw in token or token in stemmed_kw or kw in token or token in kw:
-                    found.add(kw)
-        return list(found)
+            if token not in self.stop_words and len(token) > 2:
+                stemmed_token = self.stemmer.stem(token)
+                processed_tokens.append(stemmed_token)
+        
+        return processed_tokens
+
 
     def classify_with_ai(self, content: str) -> Dict:
+        """Classify email using AI model"""
         try:
+            # RÓTULOS FINAIS E OTIMIZADOS
             candidate_labels = [
                 "E-mail de trabalho sobre tarefa, projeto ou reunião",
                 "E-mail de marketing, spam, propaganda ou anúncio"
             ]
+            
             result = self.ai_classifier(content, candidate_labels, multi_label=False)
+            
+            # Adicione este log para depuração
             logger.info(f"AI Model Raw Output: {result}")
+            
             top_label = result['labels'][0]
             confidence = result['scores'][0]
-            category = "Produtivo" if top_label == candidate_labels[0] else "Improdutivo"
+            
+            if top_label == candidate_labels[0]:
+                category = "Produtivo"
+            else:
+                category = "Improdutivo"
+            
             tokens = self.preprocess_text(content)
-            found_keywords = self.find_keywords(
-                tokens,
-                self.productive_keywords if category == "Produtivo" else self.unproductive_keywords
-            )
+            if category == "Produtivo":
+                found_keywords = self.find_keywords(tokens, self.productive_keywords)
+            else:
+                found_keywords = self.find_keywords(tokens, self.unproductive_keywords)
+            
             return {
                 "category": category,
                 "confidence": confidence,
                 "method": "AI",
                 "found_keywords": found_keywords[:10]
             }
+            
         except Exception as e:
             logger.error(f"AI classification failed: {e}")
             return self.classify_with_keywords(content)
 
     def classify_with_keywords(self, content: str) -> Dict:
+        """Fallback keyword-based classification"""
         tokens = self.preprocess_text(content)
         found_productive = self.find_keywords(tokens, self.productive_keywords)
         found_unproductive = self.find_keywords(tokens, self.unproductive_keywords)
+        
         productive_score = len(found_productive)
         unproductive_score = len(found_unproductive)
+        
         if productive_score > unproductive_score:
             category = "Produtivo"
             confidence = min(0.95, max(0.6, (productive_score + 1) / (productive_score + unproductive_score + 2)))
@@ -164,40 +187,58 @@ class EmailClassifier:
             category = "Produtivo"
             confidence = 0.5
             found_keywords = found_productive if found_productive else []
+        
         return {
             "category": category,
             "confidence": confidence,
             "method": "Keywords",
-            "found_keywords": found_keywords[:10]
+            "found_keywords": found_keywords[:10]  
         }
 
+
     def classify_email(self, content: str) -> Dict:
+        """Main classification method with Hybrid Logic"""
         start_time = datetime.now()
+        
         logger.info(f"Classifying email with {len(content)} characters")
+        
+        # PASSO 1: Classificação inicial com IA
         if self.use_ai_model:
             classification_result = self.classify_with_ai(content)
         else:
             classification_result = self.classify_with_keywords(content)
-        # Lógica híbrida para detectar spam disfarçado
+        
+        # PASSO 2: LÓGICA HÍBRIDA (REDE DE SEGURANÇA)
+
+        # para garantir que não seja um spam disfarçado.
         if classification_result["category"] == "Produtivo" and classification_result["method"] == "AI":
+            # Palavras-chave de spam de alta certeza (PT e EN, incluindo expressões compostas)
             spam_triggers = {
                 'investimento', 'renda', 'lucro', 'ganhar dinheiro', 'gratis', 'oportunidade unica', 'clique aqui', 'promocao',
                 'lottery', 'prize', 'winner', 'click here', 'urgent', 'confidential', 'agent', 'claim your prize', 'selected as a winner',
                 'contact our agent', 'provide your details', 'annual international lottery', 'you have won', 'usd', 'premio', 'ganhe', 'oferta'
             }
             content_lower = content.lower()
+            
+            # Se alguma palavra-gatilho de spam for encontrada...
             if any(trigger in content_lower for trigger in spam_triggers):
                 logger.info("Hybrid Logic Triggered: AI classified as Productive, but spam keywords were found. Overriding to Improductive.")
+                # Inverte a classificação para Improdutivo
                 classification_result["category"] = "Improdutivo"
-                classification_result["confidence"] = 0.95
+                # Inverte a confiança para refletir a certeza da regra
+                classification_result["confidence"] = 0.95 
                 classification_result["method"] = "AI + Hybrid Rule"
+
         suggested_response = self.generate_response(classification_result["category"], content)
+        
         reasoning = self.generate_reasoning(
-            classification_result["category"],
+            classification_result["category"], 
             classification_result["found_keywords"],
             classification_result["method"]
         )
+        
         processing_time = (datetime.now() - start_time).total_seconds()
+        
         result = {
             "category": classification_result["category"],
             "confidence": classification_result["confidence"],
@@ -208,111 +249,158 @@ class EmailClassifier:
             "originalContent": content,
             "classificationMethod": classification_result["method"]
         }
+        
         logger.info(f"Classification completed: {result['category']} "
-                    f"({result['confidence']:.2f} confidence) "
-                    f"in {processing_time:.2f}s using {result['classificationMethod']}")
+                f"({result['confidence']:.2f} confidence) "
+                f"in {processing_time:.2f}s using {result['classificationMethod']}")
+        
         return result
 
     def generate_response(self, category: str, content: str) -> str:
-        content_lower = content.lower()
+        """Generate appropriate response based on classification"""
         if category == "Produtivo":
+            content_lower = content.lower()
+            
             if any(word in content_lower for word in ['reuniao', 'meeting', 'encontro', 'agenda']):
-                return (
-                    "Obrigado pelo seu email.\n\n"
-                    "Recebi sua solicitação de reunião e vou verificar minha agenda. Retornarei em breve com minha disponibilidade.\n\n"
-                    "Caso seja urgente, não hesite em entrar em contato por telefone.\n\n"
-                    "Atenciosamente,\n[Seu Nome]"
-                )
+                return """Obrigado pelo seu email.
+
+Recebi sua solicitação de reunião e vou verificar minha agenda. Retornarei em breve com minha disponibilidade.
+
+Caso seja urgente, não hesite em entrar em contato por telefone.
+
+Atenciosamente,
+[Seu Nome]"""
+            
             elif any(word in content_lower for word in ['projeto', 'project', 'proposta', 'desenvolvimento']):
-                return (
-                    "Obrigado pelo contato.\n\n"
-                    "Recebi as informações sobre o projeto e vou analisar os detalhes fornecidos. Retornarei com um feedback detalhado em até 2 dias úteis.\n\n"
-                    "Caso tenha alguma dúvida adicional, fique à vontade para entrar em contato.\n\n"
-                    "Atenciosamente,\n[Seu Nome]"
-                )
+                return """Obrigado pelo contato.
+
+Recebi as informações sobre o projeto e vou analisar os detalhes fornecidos. Retornarei com um feedback detalhado em até 2 dias úteis.
+
+Caso tenha alguma dúvida adicional, fique à vontade para entrar em contato.
+
+Atenciosamente,
+[Seu Nome]"""
+            
             elif any(word in content_lower for word in ['relatorio', 'report', 'analise', 'documento']):
-                return (
-                    "Obrigado pelo envio.\n\n"
-                    "Recebi o documento e vou proceder com a análise. Caso tenha alguma observação específica ou prazo para retorno, por favor me informe.\n\n"
-                    "Retornarei com meus comentários em breve.\n\n"
-                    "Atenciosamente,\n[Seu Nome]"
-                )
+                return """Obrigado pelo envio.
+
+Recebi o documento e vou proceder com a análise. Caso tenha alguma observação específica ou prazo para retorno, por favor me informe.
+
+Retornarei com meus comentários em breve.
+
+Atenciosamente,
+[Seu Nome]"""
+            
             elif any(word in content_lower for word in ['prazo', 'deadline', 'entrega', 'urgente']):
-                return (
-                    "Obrigado pelo contato.\n\n"
-                    "Entendi a urgência da solicitação e vou priorizar esta demanda. Retornarei com uma resposta o mais breve possível.\n\n"
-                    "Caso precise de esclarecimentos adicionais, estou à disposição.\n\n"
-                    "Atenciosamente,\n[Seu Nome]"
-                )
+                return """Obrigado pelo contato.
+
+Entendi a urgência da solicitação e vou priorizar esta demanda. Retornarei com uma resposta o mais breve possível.
+
+Caso precise de esclarecimentos adicionais, estou à disposição.
+
+Atenciosamente,
+[Seu Nome]"""
+            
             else:
-                return (
-                    "Obrigado pelo seu email.\n\n"
-                    "Recebi sua mensagem e vou analisar as informações fornecidas. Retornarei com uma resposta detalhada em breve.\n\n"
-                    "Caso seja urgente, não hesite em entrar em contato por telefone.\n\n"
-                    "Atenciosamente,\n[Seu Nome]"
-                )
-        else:
-            return (
-                "Obrigado pelo contato.\n\n"
-                "No momento, não tenho interesse na proposta apresentada. Caso tenha algo mais específico relacionado ao meu trabalho, fique à vontade para entrar em contato novamente.\n\n"
-                "Para remover meu email de sua lista de contatos, responda com \"REMOVER\" no assunto.\n\n"
-                "Atenciosamente,\n[Seu Nome]"
-            )
+                return """Obrigado pelo seu email.
+
+Recebi sua mensagem e vou analisar as informações fornecidas. Retornarei com uma resposta detalhada em breve.
+
+Caso seja urgente, não hesite em entrar em contato por telefone.
+
+Atenciosamente,
+[Seu Nome]"""
+        
+        else:  # Improdutivo
+            return """Obrigado pelo contato.
+
+No momento, não tenho interesse na proposta apresentada. Caso tenha algo mais específico relacionado ao meu trabalho, fique à vontade para entrar em contato novamente.
+
+Para remover meu email de sua lista de contatos, responda com "REMOVER" no assunto.
+
+Atenciosamente,
+[Seu Nome]"""
 
     def generate_reasoning(self, category: str, found_keywords: List[str], method: str) -> str:
+        """Generate reasoning for the classification"""
+        
         if category == "Produtivo":
-            reasoning = (
-                f"Este email foi classificado como PRODUTIVO usando {method}.\n\n"
-                f"Indicadores encontrados:\n"
-                f"• {len(found_keywords)} palavras-chave relacionadas a trabalho e produtividade"
-            )
+            reasoning = f"""Este email foi classificado como PRODUTIVO usando {method}.
+
+Indicadores encontrados:
+• {len(found_keywords)} palavras-chave relacionadas a trabalho e produtividade"""
+            
             if found_keywords:
                 reasoning += f"\n• Palavras identificadas: {', '.join(found_keywords[:5])}"
                 if len(found_keywords) > 5:
                     reasoning += f" (e mais {len(found_keywords) - 5})"
-            reasoning += (
-                "\n\nA análise identificou termos associados a atividades profissionais, projetos, reuniões ou assuntos corporativos relevantes, indicando que este email requer atenção e resposta adequada."
-            )
+            
+            reasoning += "\n\nA análise identificou termos associados a atividades profissionais, projetos, reuniões ou assuntos corporativos relevantes, indicando que este email requer atenção e resposta adequada."
+        
         else:
-            reasoning = (
-                f"Este email foi classificado como IMPRODUTIVO usando {method}.\n\n"
-                f"Indicadores encontrados:\n"
-                f"• {len(found_keywords)} palavras-chave relacionadas a spam/promoções"
-            )
+            reasoning = f"""Este email foi classificado como IMPRODUTIVO usando {method}.
+
+Indicadores encontrados:
+• {len(found_keywords)} palavras-chave relacionadas a spam/promoções"""
+            
             if found_keywords:
                 reasoning += f"\n• Palavras identificadas: {', '.join(found_keywords[:5])}"
                 if len(found_keywords) > 5:
                     reasoning += f" (e mais {len(found_keywords) - 5})"
-            reasoning += (
-                "\n\nA análise identificou padrões típicos de emails promocionais, spam ou conteúdo não relacionado a atividades profissionais, sugerindo que pode ser tratado com menor prioridade."
-            )
+            
+            reasoning += "\n\nA análise identificou padrões típicos de emails promocionais, spam ou conteúdo não relacionado a atividades profissionais, sugerindo que pode ser tratado com menor prioridade."
+        
         return reasoning
+
+    def find_keywords(self, tokens, keyword_set):
+        """Identifica palavras-chave usando stemming e correspondência parcial"""
+        found = set()
+        for token in tokens:
+            for kw in keyword_set:
+                # Stemming para ambos
+                stemmed_kw = self.stemmer.stem(kw)
+                if stemmed_kw in token or token in stemmed_kw:
+                    found.add(kw)
+                # Correspondência parcial (substring)
+                elif kw in token or token in kw:
+                    found.add(kw)
+        return list(found)
 
 classifier = EmailClassifier()
 
 @app.route('/classify', methods=['POST'])
 def classify_email():
+    """Endpoint to classify email content"""
     try:
         data = request.get_json()
+        
         if not data or 'content' not in data:
             logger.warning("Classification request missing content")
             return jsonify({'error': 'Email content is required'}), 400
+        
         content = data['content']
+        
         if len(content.strip()) < 10:
             logger.warning(f"Content too short: {len(content)} characters")
             return jsonify({'error': 'Email content too short for classification (minimum 10 characters)'}), 400
+        
         source = data.get('source', 'unknown')
         filename = data.get('filename', 'N/A')
         logger.info(f"Classification request - Source: {source}, Filename: {filename}, Length: {len(content)}")
+        
         result = classifier.classify_email(content)
+        
         logger.info(f"Classification successful - Category: {result['category']}, Confidence: {result['confidence']:.2f}")
+        
         return jsonify(result)
+    
     except Exception as e:
         logger.error(f"Classification failed: {str(e)}", exc_info=True)
         return jsonify({'error': f'Classification failed: {str(e)}'}), 500
 
 @app.route('/health', methods=['GET'])
 def health_check():
+    """Health check endpoint"""
     health_status = {
         'status': 'healthy',
         'service': 'Email Classifier API',
@@ -321,11 +409,13 @@ def health_check():
         'ai_model_enabled': classifier.use_ai_model,
         'classification_method': 'AI + NLP' if classifier.use_ai_model else 'Keywords + NLP'
     }
+    
     logger.info("Health check requested")
     return jsonify(health_status)
 
 @app.route('/info', methods=['GET'])
 def serve_frontend():
+    """Root endpoint with API information"""
     return jsonify({
         'service': 'Email Classifier API',
         'version': '2.0.0',
@@ -362,7 +452,9 @@ def internal_error(error):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
     debug = os.environ.get('DEBUG', 'True').lower() == 'true'
+    
     logger.info(f"Starting Email Classifier API on port {port}")
     logger.info(f"Debug mode: {debug}")
     logger.info(f"AI Model: {'Enabled' if classifier.use_ai_model else 'Disabled (using keywords)'}")
+    
     app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)
