@@ -1,4 +1,17 @@
 import os
+
+# --- Configuração de diretórios e variáveis de ambiente ---
+hf_cache_dir = "/tmp/hf_cache"
+os.makedirs(hf_cache_dir, exist_ok=True)
+os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
+os.environ["HF_HOME"] = hf_cache_dir
+os.environ["HF_DATASETS_CACHE"] = hf_cache_dir
+
+nltk_data_dir = "/tmp/nltk_data"
+os.makedirs(nltk_data_dir, exist_ok=True)
+nltk.data.path.insert(0, nltk_data_dir)
+
+
 import re
 import logging
 from typing import Dict, List
@@ -13,17 +26,6 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import RSLPStemmer
 
 from transformers import pipeline
-
-# --- Configuração de diretórios e variáveis de ambiente ---
-hf_cache_dir = "/tmp/hf_cache"
-os.makedirs(hf_cache_dir, exist_ok=True)
-os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
-os.environ["HF_HOME"] = hf_cache_dir
-os.environ["HF_DATASETS_CACHE"] = hf_cache_dir
-
-nltk_data_dir = "/tmp/nltk_data"
-os.makedirs(nltk_data_dir, exist_ok=True)
-nltk.data.path.insert(0, nltk_data_dir)
 
 # --- Logging ---
 logging.basicConfig(
