@@ -1,4 +1,0 @@
-punkt
-stopwords
-rslp
-punkt_tab
