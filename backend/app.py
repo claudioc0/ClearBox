@@ -1,6 +1,15 @@
+import os
+
+# Configurar diretório de cache seguro para Hugging Face
+hf_cache_dir = "/tmp/hf_cache"
+os.makedirs(hf_cache_dir, exist_ok=True)
+os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
+os.environ["HF_HOME"] = hf_cache_dir
+os.environ["HF_DATASETS_CACHE"] = hf_cache_dir
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import shutil, os
+import shutil
 import re
 import logging
 from typing import Dict, List
@@ -24,13 +33,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# Configurar diretório de cache seguro para Hugging Face
-hf_cache_dir = "/tmp/hf_cache"
-os.makedirs(hf_cache_dir, exist_ok=True)
-os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
-os.environ["HF_HOME"] = hf_cache_dir
-os.environ["HF_DATASETS_CACHE"] = hf_cache_dir
-
 nltk_data_dir = "/tmp/nltk_data"
 os.makedirs(nltk_data_dir, exist_ok=True)
 nltk.data.path.insert(0, nltk_data_dir)
@@ -51,8 +53,6 @@ for pkg_id in nltk_packages:
         logger.info(f"Downloading NLTK package '{pkg_id}' to {nltk_data_dir}...")
         # Descarrega para o diretório temporário
         nltk.download(pkg_id, download_dir=nltk_data_dir)
-
-
 
 app = Flask(__name__, static_folder='../static', static_url_path='')
 CORS(app)
