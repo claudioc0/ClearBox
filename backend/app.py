@@ -102,7 +102,7 @@ class EmailClassifier:
             self.ai_classifier = pipeline(
                 "zero-shot-classification",
                 model=model_name,
-                device=-1  # Força o uso de CPU
+                device=-1,  # Força o uso de CPU
                 cache_dir=hf_cache_dir  # <-- Força o cache para a pasta com permissão
             )
             
