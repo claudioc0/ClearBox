@@ -22,17 +22,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-temp_dir = "/tmp"
-nltk_data_dir = os.path.join(temp_dir, "nltk_data")
-hf_cache_dir = os.path.join(temp_dir, "hf_cache")
 
-os.makedirs(nltk_data_dir, exist_ok=True)
+# Configurar diretório de cache seguro para Hugging Face
+hf_cache_dir = "/tmp/hf_cache"
 os.makedirs(hf_cache_dir, exist_ok=True)
+os.environ["TRANSFORMERS_CACHE"] = hf_cache_dir
+os.environ["HF_HOME"] = hf_cache_dir
+os.environ["HF_DATASETS_CACHE"] = hf_cache_dir
 
-# Força o NLTK e a Hugging Face a usarem os diretórios temporários
+nltk_data_dir = "/tmp/nltk_data"
+os.makedirs(nltk_data_dir, exist_ok=True)
 nltk.data.path.insert(0, nltk_data_dir)
-os.environ['TRANSFORMERS_CACHE'] = hf_cache_dir
-os.environ['HF_HOME'] = hf_cache_dir
 
 
 nltk_packages = ['punkt', 'stopwords', 'rslp', 'punkt_tab']
@@ -102,7 +102,8 @@ class EmailClassifier:
             self.ai_classifier = pipeline(
                 "zero-shot-classification",
                 model=model_name,
-                device=-1  # Força o uso de CPU, mais estável no Heroku
+                device=-1  # Força o uso de CPU
+                cache_dir=hf_cache_dir  # <-- Força o cache para a pasta com permissão
             )
             
             logger.info(f"AI model '{model_name}' loaded successfully")
